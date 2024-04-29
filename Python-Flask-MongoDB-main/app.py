@@ -11,7 +11,7 @@ app = Flask(__name__)
 def home():
     products = db['products']
     productsReceived = products.find()
-    return render_template('index.html', products = productsReceived)
+    return render_template('index.html', products=productsReceived)
 
 #Method Post
 @app.route('/products', methods=['POST'])
@@ -21,6 +21,11 @@ def addProduct():
     price = request.form['price']
     quantity = request.form['quantity']
 
+    product = products.find_one({'name': name})
+    if product:
+        # Si existe, devuelve un mensaje de error
+        return jsonify({'message': 'Ya existe un producto con ese nombre.', 'success': False})
+
     if name and price and quantity:
         product = Product(name, price, quantity)
         products.insert_one(product.toDBCollection())
@@ -29,7 +34,7 @@ def addProduct():
             'price' : price,
             'quantity' : quantity
         })
-        return redirect(url_for('home'))
+        return jsonify({'message': 'Guardado!', 'success': True})
     else:
         return notFound()
 

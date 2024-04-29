@@ -2,9 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>API</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
 
 </head>
@@ -54,7 +53,8 @@
                                                 <small>PRECIO</small>
                                                 <input type="text" class="form-control" value="{{product.price}}" name="price">
                                                 <button class="btn btn-primary btn-sm mt-3" type="submit">Editar</button>
-                                                <a href="{{url_for('delete', product_name=product.name)}}" class="btn btn-danger btn-sm mt-3">Eliminar</a>
+                                                <a href="{{url_for('delete', product_name=product.name)}}" class="btn btn-danger btn-sm mt-3" onclick="return confirmDelete(event, this.href);">Eliminar</a>
+
 
                                             </form>
                                         </li>
@@ -68,6 +68,65 @@
             </div>
         </div>
     </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+    $(document).ready(function() {
+        $('form').on('submit', function(event) {
+            event.preventDefault(); // Evita que el formulario se envíe de la manera tradicional
     
+            var form = $(this);
+            var formContainer = form.closest('.card-body'); // Encuentra el contenedor del formulario
+    
+            $.ajax({
+                url: '/products',
+                type: 'POST',
+                data: form.serialize(),
+                success: function(response) {
+                    if (response.success) {
+                        // Muestra el mensaje de "Guardado!" en un recuadro personalizado
+                        var alertBox = $('<div class="alert alert-success" role="alert">' + response.message + '</div>');
+                        formContainer.append(alertBox);
+                        // Oculta el mensaje después de 3 segundos
+                        setTimeout(function() {
+                            alertBox.fadeOut('slow', function() {
+                                alertBox.remove(); // Elimina el mensaje después de ocultarlo
+                            });
+                            // Limpia los campos del formulario
+                           form.find('input').val('');
+    
+                             // Recarga la página para actualizar la lista de productos
+                             location.reload();
+                        }, 400);
+
+                        form.find('input').val('');
+                } else {
+                    // Muestra el mensaje de error en un recuadro personalizado
+                    var errorBox = $('<div class="alert alert-danger" role="alert">' + response.message + '</div>');
+                    formContainer.append(errorBox);
+                    setTimeout(function() {
+                        errorBox.fadeOut('slow', function() {
+                            errorBox.remove(); // Elimina el mensaje después de ocultarlo
+                        });
+                    }, 600);
+                        
+                    }
+                }
+            });
+        });
+    });
+    </script>
+
+<script>
+    function confirmDelete(event, href) {
+        if (!confirm('¿Está seguro de eliminar este producto?')) {
+            event.preventDefault(); // Evita que la acción predeterminada del enlace (la eliminación) se ejecute
+        }
+    }
+    </script>  
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha384-KyZXEAg3QhqLMpG8r+Knujsl5/6en8XCp+HHAAK5GSLf2xlYtvJ8U2Q4U+9cuEnJoa3" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pzjw8f+ua7Kw1TIq0v8FqFjcJ6pajs/rfdfs3SO+kD4Ck5BdPtF+to8xMp9MvcW" crossorigin="anonymous"></script>    
+    
+        
 </body>
 </html>
