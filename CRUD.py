@@ -4,7 +4,6 @@ from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 import certifi
 import uuid
-from bson import ObjectId
 
 app = Flask(__name__)
 
@@ -23,21 +22,24 @@ db = client.get_database("miInventario")
 collection = db.productos
 
 # Obtener todos los productos
-@app.route('/productos', methods=['GET'])
+@app.route('/allProductos', methods=['GET'])
 def get_productos():
     productos = list(collection.find({}, {'_id': 0}))
     return jsonify(productos)
 
-# Obtener un producto por su ID
-@app.route('/productos/<string:nombre>', methods=['GET'])
-def get_producto(nombre):
-    producto = collection.find_one({'nombre': nombre}, {'_id': 0})
-    if producto:
-        return jsonify(producto)
-    return jsonify({"error": "Producto no encontrado"}), 404
+# Obtener un producto por su nombre
+@app.route('/producto', methods=['GET'])
+def get_producto_por_nombre():
+    nombre = request.args.get('nombre')
+    if nombre:
+        producto = collection.find_one({'nombre': nombre}, {'_id': 0})
+        if producto:
+            return jsonify(producto)
+        return jsonify({"error": "Producto no encontrado"}), 404
+    return jsonify({"error": "Se requiere un nombre de producto"}), 400
 
 # Crear un nuevo producto
-@app.route('/productos', methods=['POST'])
+@app.route('/newProducto', methods=['POST'])
 def crear_producto():
     nuevo_producto = request.get_json()
     nuevo_producto['_id'] = str(uuid.uuid4())
@@ -46,7 +48,7 @@ def crear_producto():
     return jsonify(nuevo_producto), 201
 
 # Actualizar un producto
-@app.route('/productos/<string:nombre>', methods=['PUT'])
+@app.route('/editProducto/<string:nombre>', methods=['PUT'])
 def actualizar_producto(nombre):
     producto_data = request.get_json()
     print(producto_data)
@@ -56,7 +58,7 @@ def actualizar_producto(nombre):
     return jsonify({"error": "Producto no encontrado"}), 404
 
 # Eliminar un producto
-@app.route('/productos/<string:nombre>', methods=['DELETE'])
+@app.route('/deleteProducto/<string:nombre>', methods=['DELETE'])
 def eliminar_producto(nombre):
     resultado = collection.delete_one({'nombre': nombre})
     if resultado.deleted_count > 0:
