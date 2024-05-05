@@ -29,9 +29,9 @@ def get_productos():
     return jsonify(productos)
 
 # Obtener un producto por su ID
-@app.route('/productos/<string:id>', methods=['GET'])
-def get_producto(id):
-    producto = collection.find_one({'id': id}, {'_id': 0})
+@app.route('/productos/<string:nombre>', methods=['GET'])
+def get_producto(nombre):
+    producto = collection.find_one({'nombre': nombre}, {'_id': 0})
     if producto:
         return jsonify(producto)
     return jsonify({"error": "Producto no encontrado"}), 404
@@ -46,20 +46,21 @@ def crear_producto():
     return jsonify(nuevo_producto), 201
 
 # Actualizar un producto
-@app.route('/productos/<string:id>', methods=['PUT'])
-def actualizar_producto(id):
+@app.route('/productos/<string:nombre>', methods=['PUT'])
+def actualizar_producto(nombre):
     producto_data = request.get_json()
-    resultado = collection.update_one({'id': id}, {'$set': producto_data})
+    print(producto_data)
+    resultado = collection.update_one({'nombre': nombre}, {'$set': producto_data})
     if resultado.modified_count > 0:
         return jsonify(producto_data)
     return jsonify({"error": "Producto no encontrado"}), 404
 
 # Eliminar un producto
-@app.route('/productos/<string:id>', methods=['DELETE'])
-def eliminar_producto(id):
-    resultado = collection.delete_one({'id': id})
+@app.route('/productos/<string:nombre>', methods=['DELETE'])
+def eliminar_producto(nombre):
+    resultado = collection.delete_one({'nombre': nombre})
     if resultado.deleted_count > 0:
-        return jsonify({"mensaje": "Producto eliminado"})
+        return jsonify({"mensaje": f"El producto {nombre} ha sido eliminado"})
     return jsonify({"error": "Producto no encontrado"}), 404
 
 if __name__ == '__main__':
