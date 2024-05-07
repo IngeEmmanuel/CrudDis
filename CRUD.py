@@ -2,14 +2,22 @@ from flask import Flask, jsonify, request
 from pymongo import MongoClient
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
-import certifi
 import uuid
+import os
+from dotenv import load_dotenv
 
 app = Flask(__name__)
 
-uri  = 'mongodb+srv://jMejia2:fCn5fSLzmA07nh3H@cluster0.p0kwqwt.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
+load_dotenv()
 
-client = MongoClient(uri, server_api=ServerApi('1'))
+caPath = os.environ['MONGO_PEM']
+print(caPath)
+uri  = "mongodb+srv://cluster0.p0kwqwt.mongodb.net/?authSource=%24external&authMechanism=MONGODB-X509&retryWrites=true&w=majority&appName=Cluster0"
+
+client = MongoClient(uri,
+                     tls=True,
+                     tlsCertificateKeyFile=caPath,
+                     server_api=ServerApi('1'))
 
 # Send a ping to confirm a successful connection
 try:
@@ -20,6 +28,8 @@ except Exception as e:
 
 db = client.get_database("miInventario")
 collection = db.productos
+doc_count = collection.count_documents({})
+print(doc_count)
 
 # Obtener todos los productos
 @app.route('/allProductos', methods=['GET'])
